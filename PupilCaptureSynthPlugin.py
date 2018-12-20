@@ -50,7 +50,7 @@ class SynthController(Plugin):
                 self.time_eyes_closed = curr_time
             elif events['pupil'][0]['confidence'] >= 0.5 and self.time_eyes_closed:
                 if curr_time - self.time_eyes_closed > 0.25:
-                    self.socket.send(str(self.last_square).encode())
+                    self.socket.send('SELECT'.encode())
                 self.time_eyes_closed = None
         if 'surfaces' in events and events['surfaces']:
             surface = events['surfaces'][0]
@@ -60,6 +60,7 @@ class SynthController(Plugin):
                     square = int(pos[0] * 3) + int(pos[1] * 2) * 3
                     if self.last_square != square and square >= 0 and square <= 127:
                         self.last_square = square
+                        self.socket.send(str(self.last_square).encode())
 
                 
 
