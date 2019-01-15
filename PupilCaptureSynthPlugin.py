@@ -3,7 +3,13 @@ from pyglui import ui
 import socket
 import sys
 import time
+import subprocess
+import os
 
+def start_helm():
+    my_env = os.environ
+    my_env.pop('LD_LIBRARY_PATH', None)
+    print(subprocess.Popen(['helm']))
 
 class SynthController(Plugin):
     # Calling add_menu() will create an icon in the icon bar that represents
@@ -32,6 +38,8 @@ class SynthController(Plugin):
         # self.menu.append(ui.Info_Text(help_str))
         # Add a slider that represents the persistent value
         self.menu.append(ui.Slider('last_square', self, min=0, step=1, max=5, label='Pupil Labs Glasses'))
+        
+        self.menu.append(ui.Button('Start Helm', start_helm))
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.connect(('127.0.0.1', 8899))
