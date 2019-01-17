@@ -6,7 +6,7 @@ import mido
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Bind the socket to the port
-sock.bind(('0.0.0.0', 8899))
+sock.bind(('0.0.0.0', 8898))
 midi_port = mido.open_output()
 knob = None
 selected_knob = None
@@ -21,7 +21,7 @@ while True:
     print('received {} bytes from {}\n'.format(len(data), address))
 
     if address[0] == '127.0.0.1':
-        if data.decode() == 'SELECT\n':
+        if data.decode() == 'SELECT':
             selected_knob = knob
             if selected_knob not in smoothing_array:
                 smoothing_array[selected_knob] = [0] * smoothing_k
