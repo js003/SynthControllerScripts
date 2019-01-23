@@ -7,14 +7,6 @@ import time
 import subprocess
 import os
 
-def start_helm():
-    my_env = os.environ
-    my_env.pop('LD_LIBRARY_PATH', None)
-    subprocess.Popen(['python3', '/home/snyth/Desktop/SynthControllerScripts/SynthControllerDataReceiver.py'], env=my_env)
-    subprocess.Popen(['/home/synth/Desktop/helm/gui-synth/standalone/builds/linux/build/helm'], env=my_env)
-    time.sleep(0.5)
-    subprocess.Popen(['xdotool', 'key', 'super+f'], env=my_env)
-
 class SynthController(Plugin):
     # Calling add_menu() will create an icon in the icon bar that represents
     # your plugin. You can customize this icon with a symbol of your choice.
@@ -33,14 +25,26 @@ class SynthController(Plugin):
         self.socket = None
         self.time_eyes_closed = None
         self.colors = [b'1511ff',b'00ff15',b'fff200',b'ff0000']
+        self.helm_started = False
 
     def init_ui(self):
         # Create a floating menu
         self.add_menu()
         self.menu.label = 'SynthController'
         self.menu.append(ui.Slider('last_square', self, min=0, step=1, max=3, label='Pupil Labs Glasses'))
-        self.menu.append(ui.Button('Start Helm', start_helm))
+        self.menu.append(ui.Button('Start Helm', self.start_helm))
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def start_helm(self):
+        if self.helm_started:
+             return
+        self.helm_started = True
+        my_env = os.environ
+        my_env.pop('LD_LIBRARY_PATH', None)
+        subprocess.Popen(['python3', '/home/snyth/Desktop/SynthControllerScripts/SynthControllerDataReceiver.py'], env=my_env)
+        subprocess.Popen(['/home/synth/Desktop/helm/gui-synth/standalone/builds/linux/build/helm'], env=my_env)
+        time.sleep(0.5)
+        subprocess.Popen(['xdotool', 'key', 'super+f'], env=my_env)
 
     def deinit_ui(self):
         self.remove_menu()

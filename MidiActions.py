@@ -22,11 +22,11 @@ with mido.open_input('Q49 MIDI 1') as port:
 
     if keyOne and keyTwo:
       subprocess.Popen(['xdotool', 'key', 'super+f'])
-      time.sleep(0.05)
+      time.sleep(0.1)
       subprocess.Popen(['xdotool', 'key', 'super+Right'])
-      time.sleep(0.05)
+      time.sleep(0.1)
       subprocess.Popen(['xdotool', 'key', 'super+f'])
-      time.sleep(0.05)
+      time.sleep(0.1)
 
 
 
