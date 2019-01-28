@@ -1,3 +1,4 @@
+import traceback
 import time
 import uvc
 import numpy as np
@@ -9,67 +10,78 @@ class MarkerSelection:
         pass
 
     def run(self):
-        # Setup camera captures
-        dev_list = uvc.device_list()
-        world_capture = uvc.Capture(dev_list[1]["uid"])
-        eye_capture = uvc.Capture(dev_list[0]["uid"])
+        running = True
+        while(running):
+            try:
+                # Setup camera captures
+                dev_list = uvc.device_list()
+                world_capture = uvc.Capture(dev_list[1]["uid"])
+                eye_capture = uvc.Capture(dev_list[0]["uid"])
 
-        # Setup resolutions
-        width = 1280
-        height = 720
-        self.cam_center = (int(width/2), int(height/2))
-        world_capture.frame_mode = (width, height, 60)
-        eye_capture.frame_mode = (640, 480, 60)
+                # Setup resolutions
+                width = 1280
+                height = 720
+                self.cam_center = (int(width/2), int(height/2))
+                world_capture.frame_mode = (width, height, 60)
+                eye_capture.frame_mode = (640, 480, 60)
 
-        # Aruco
-        self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
-        self.aruco_params = aruco.DetectorParameters_create()
+                # Aruco
+                self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+                self.aruco_params = aruco.DetectorParameters_create()
 
-        # Initialize variables
-        last_pupil_count = 1
-        eye_closed_start = None
-        selected_marker_id = -1
+                # Initialize variables
+                last_pupil_count = 1
+                eye_closed_start = None
+                selected_marker_id = -1
+           
+                while(running):
+                    # Blink detection
+                    eye_frame = eye_capture.get_frame(1)
+                    eye_bgr = eye_frame.bgr
+                    eye_gray = eye_frame.gray
+                    pupil_count = self.process_eye_frame(eye_bgr, eye_gray)
+                    cv2.imshow('eye_frame', eye_bgr)
 
-        try:
-            while(True):
-                # Blink detection
-                eye_frame = eye_capture.get_frame_robust()
-                eye_bgr = eye_frame.bgr
-                eye_gray = eye_frame.gray
-                pupil_count = self.process_eye_frame(eye_bgr, eye_gray)
-                cv2.imshow('eye_frame', eye_bgr)
+                    if last_pupil_count == 1 and pupil_count == 0:
+                        last_pupil_count = 0
+                        eye_closed_start = time.time()
+                    elif last_pupil_count == 0 and pupil_count == 1:
+                        last_pupil_count = 1
+                        t = time.time() - eye_closed_start
+                        if t > 0.3:
+                            self.blink_action(selected_marker_id)
 
-                if last_pupil_count == 1 and pupil_count == 0:
-                    last_pupil_count = 0
-                    eye_closed_start = time.time()
-                elif last_pupil_count == 0 and pupil_count == 1:
-                    last_pupil_count = 1
-                    t = time.time() - eye_closed_start
-                    if t > 0.3:
-                        self.blink_action(selected_marker_id)
+                    # Marker detection
+                    world_frame = world_capture.get_frame(1)
+                    world_bgr = world_frame.bgr
+                    world_gray = world_frame.gray
+                    selected_marker = self.process_world_frame(world_bgr, world_gray)
+                    cv2.imshow('world_frame', world_bgr)
 
-                # Marker detection
-                world_frame = world_capture.get_frame_robust()
-                world_bgr = world_frame.bgr
-                world_gray = world_frame.gray
-                selected_marker = self.process_world_frame(world_bgr, world_gray)
-                cv2.imshow('world_frame', world_bgr)
+                    if pupil_count == 1:
+                        curr_id = selected_marker[0] if selected_marker is not None else -1
+                        if curr_id != selected_marker_id:
+                            selected_marker_id = curr_id
+                            self.select_action(selected_marker_id)
 
-                if pupil_count == 1:
-                    curr_id = selected_marker[0] if selected_marker is not None else -1
-                    if curr_id != selected_marker_id:
-                        selected_marker_id = curr_id
-                        self.select_action(selected_marker_id)
-
-                # Exit if the user presses 'q'
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        except KeyboardInterrupt:
-            pass
-
-        # When everything done, release the capture
-        cv2.destroyWindow('eye_frame')
-        cv2.destroyWindow('world_frame')
+                    # Exit if the user presses 'q'
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        running = False
+            except KeyboardInterrupt:
+                running = False
+            except Exception:
+                traceback.print_exc()
+                cv2.destroyAllWindows()
+                try:
+                    input("Press Enter to restart...")
+                except KeyboardInterrupt:
+                    running = False
+            try:
+                world_capture.close()
+                eye_capture.close()
+            except:
+                pass
+            cv2.destroyAllWindows()
 
     def process_eye_frame(self, frame_bgr, frame_gray):
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
