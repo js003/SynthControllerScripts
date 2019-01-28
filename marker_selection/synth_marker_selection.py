@@ -9,7 +9,7 @@ class SynthMarkerSelection(MarkerSelection):
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def select_action(self, marker_id)
+    def select_action(self, marker_id):
         print('Looking at marker ' + str(marker_id))
         color = COLORS[marker_id] if marker_id >= 0 else b'000000'
         self.socket.sendto(color, ('127.0.0.1', 8899))
