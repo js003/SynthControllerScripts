@@ -144,13 +144,16 @@ class MarkerSelection:
     def retry_dialog(self, text):
         self.running = False
         root = tk.Tk()
+        
         root.title("Marker tracking crashed")
         label = tk.Label(root, text=text)
+        label.config(font=("Courier", 16))
         label.pack(side="top", fill="both", expand=True, padx=20, pady=20)
         def confirm_restart():
             self.running = True
             root.destroy()
         button = tk.Button(root, text="Restart", command=confirm_restart)
+        button.config(font=("Courier", 24))
         button.pack(side="bottom", fill="none", expand=True, padx=20, pady=20)
         root.mainloop()
 
