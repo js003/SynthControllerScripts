@@ -5,7 +5,7 @@ from marker_selection import MarkerSelection
 
 class MidiMarkerSelection(MarkerSelection):
 
-    def __init__(self, ip, port):
+    def __init__(self):
         self.midi_port = mido.open_output()
         self.marker_state = {}
     
