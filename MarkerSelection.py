@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import time
 from cv2 import aruco
+from pythonosc import udp_client
 
 def process_eye_frame(frame_bgr, frame_gray):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
@@ -46,7 +47,7 @@ def process_world_frame(frame_bgr, frame_gray, cam_center):
         center = c[0].mean(0)
         distance = np.linalg.norm(cam_center - center)
         if selected_marker is None or selected_marker[3] > distance:
-            selected_marker = (ids[i], c, center, distance)
+            selected_marker = (ids[i][0], c, center, distance)
 
     if selected_marker is not None:
         cv2.circle(frame_bgr, tuple(selected_marker[2]), 20, (0, 255, 0), 4)
@@ -74,6 +75,8 @@ def main():
     last_pupil_count = 1
     eye_closed_start = None
     last_selected_marker = None
+    client = udp_client.SimpleUDPClient("192.168.178.72", 5006)
+    marker_state = {}
 
     while(True):
         # Blink detection
@@ -89,8 +92,12 @@ def main():
         elif last_pupil_count == 0 and pupil_count == 1:
             last_pupil_count = 1
             t = time.time() - eye_closed_start
-            if t > 0.3:
-                print("BLINK DETECTED!")
+            if t > 0.3 and last_selected_marker is not None:
+                marker_id = last_selected_marker[0]
+                toggle = marker_state.get(marker_id, False)
+                print("Blink: Marker " + str(marker_id) + " " + str(not toggle))
+                marker_state[marker_id] = not toggle
+                client.send_message("/marker" + str(marker_id), 127 if toggle else 0)
 
         # Marker detection
         world_frame = world_capture.get_frame_robust()
@@ -99,7 +106,7 @@ def main():
         selected_marker = process_world_frame(world_bgr, world_gray, cam_center)
         cv2.imshow('world_frame', world_bgr)
 
-        if pupil_count == 1 and selected_marker is not None:
+        if pupil_count == 1:
             last_selected_marker = selected_marker
 
         # Exit if the user presses 'q'
