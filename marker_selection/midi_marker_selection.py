@@ -15,7 +15,7 @@ class MidiMarkerSelection(MarkerSelection):
         print("Blink: Marker " + str(marker_id) + " " + str(not toggle))
         self.marker_state[marker_id] = not toggle
         if marker_id == 0:
-            self.midi_port.send(mido.Message('control_change', channel=0 if toggle else 1, control=marker_id, value=127) 
+            self.midi_port.send(mido.Message('control_change', channel=0 if toggle else 1, control=marker_id, value=127))
         else:
             self.midi_port.send(mido.Message('control_change', channel=0, control=marker_id, value=127 if toggle else 0))  
 
