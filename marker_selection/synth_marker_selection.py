@@ -17,6 +17,9 @@ class SynthMarkerSelection(MarkerSelection):
         print('Blink at marker ' + str(marker_id))
         self.socket.sendto(str(marker_id).encode(), ('127.0.0.1', 8898))
 
+    def overlay_marker(self, marker_id, marker_corners, frame):
+        rgb = tuple(int(COLORS[marker_id][i:i+2], 16) for i in (0, 2 ,4))
+        cv2.polylines(frame, marker_corners, True, (rgb[2], rgb[1], rgb[0]), 2)
 
 if __name__ == '__main__':
     SynthMarkerSelection().run()
