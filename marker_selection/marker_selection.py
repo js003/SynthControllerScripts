@@ -122,7 +122,10 @@ class MarkerSelection:
                 selected_marker = (marker_id, c, center, distance)
 
         if selected_marker is not None:
-            cv2.circle(frame_bgr, tuple(selected_marker[2]), 30, (0, 255, 0), 4)
+            if selected_marker[3] > 200:
+                selected_marker = None
+            else:
+                cv2.circle(frame_bgr, tuple(selected_marker[2]), 30, (0, 255, 0), 4)
 
         cv2.circle(frame_bgr, self.cam_center, 5, (0, 0, 0), 2)
         cv2.circle(frame_bgr, self.cam_center, 8, (255, 255, 255), 2)
