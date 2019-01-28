@@ -1,11 +1,12 @@
+import sys
 from pythonosc import udp_client
 from marker_selection import MarkerSelection
 
 
 class OscMarkerSelection(MarkerSelection):
 
-    def __init__(self):
-        self.client = udp_client.SimpleUDPClient("10.21.9.236", 5006)
+    def __init__(self, ip, port):
+        self.client = udp_client.SimpleUDPClient(ip, int(port))
         self.marker_state = {}
     
     def blink_action(self, marker_id):
@@ -17,4 +18,7 @@ class OscMarkerSelection(MarkerSelection):
 
 
 if __name__ == '__main__':
-    OscMarkerSelection().run()
+    if len(sys.argv) != 3:
+        print('Usage: osc_marker_selection.py <osc_server_ip> <osc_server_port>')
+    else:
+        OscMarkerSelection(sys.argv[1], sys.argv[2]).run()

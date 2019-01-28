@@ -30,39 +30,42 @@ class MarkerSelection:
         eye_closed_start = None
         selected_marker_id = -1
 
-        while(True):
-            # Blink detection
-            eye_frame = eye_capture.get_frame_robust()
-            eye_bgr = eye_frame.bgr
-            eye_gray = eye_frame.gray
-            pupil_count = self.process_eye_frame(eye_bgr, eye_gray)
-            cv2.imshow('eye_frame', eye_bgr)
+        try:
+            while(True):
+                # Blink detection
+                eye_frame = eye_capture.get_frame_robust()
+                eye_bgr = eye_frame.bgr
+                eye_gray = eye_frame.gray
+                pupil_count = self.process_eye_frame(eye_bgr, eye_gray)
+                cv2.imshow('eye_frame', eye_bgr)
 
-            if last_pupil_count == 1 and pupil_count == 0:
-                last_pupil_count = 0
-                eye_closed_start = time.time()
-            elif last_pupil_count == 0 and pupil_count == 1:
-                last_pupil_count = 1
-                t = time.time() - eye_closed_start
-                if t > 0.3:
-                    self.blink_action(selected_marker_id)
+                if last_pupil_count == 1 and pupil_count == 0:
+                    last_pupil_count = 0
+                    eye_closed_start = time.time()
+                elif last_pupil_count == 0 and pupil_count == 1:
+                    last_pupil_count = 1
+                    t = time.time() - eye_closed_start
+                    if t > 0.3:
+                        self.blink_action(selected_marker_id)
 
-            # Marker detection
-            world_frame = world_capture.get_frame_robust()
-            world_bgr = world_frame.bgr
-            world_gray = world_frame.gray
-            selected_marker = self.process_world_frame(world_bgr, world_gray)
-            cv2.imshow('world_frame', world_bgr)
+                # Marker detection
+                world_frame = world_capture.get_frame_robust()
+                world_bgr = world_frame.bgr
+                world_gray = world_frame.gray
+                selected_marker = self.process_world_frame(world_bgr, world_gray)
+                cv2.imshow('world_frame', world_bgr)
 
-            if pupil_count == 1:
-                curr_id = selected_marker[0] if selected_marker is not None else -1
-                if curr_id != selected_marker_id:
-                    selected_marker_id = curr_id
-                    self.select_action(selected_marker_id)
+                if pupil_count == 1:
+                    curr_id = selected_marker[0] if selected_marker is not None else -1
+                    if curr_id != selected_marker_id:
+                        selected_marker_id = curr_id
+                        self.select_action(selected_marker_id)
 
-            # Exit if the user presses 'q'
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                # Exit if the user presses 'q'
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        except KeyboardInterrupt:
+            pass
 
         # When everything done, release the capture
         cv2.destroyWindow('eye_frame')
@@ -108,7 +111,9 @@ class MarkerSelection:
             center = c[0].mean(0)
             
             cv2.polylines(frame_bgr, np.array(c, np.int32), True, (255, 0, 0), 2)
-            cv2.putText(frame_bgr, str(marker_id), (int(center[0] - len(str(marker_id)) * 10), int(center[1] + 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            text_pos = (int(center[0] - len(str(marker_id)) * 10), int(center[1] + 10))
+            cv2.putText(frame_bgr, str(marker_id), text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 10, cv2.LINE_AA)
+            cv2.putText(frame_bgr, str(marker_id), text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             
             distance = np.linalg.norm(self.cam_center - center)
             if selected_marker is None or selected_marker[3] > distance:
