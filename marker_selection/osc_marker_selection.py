@@ -4,7 +4,7 @@ from marker_selection import MarkerSelection
 
 class OscMarkerSelection(MarkerSelection):
 
-    def __init__():
+    def __init__(self):
         self.client = udp_client.SimpleUDPClient("10.21.9.236", 5006)
         self.marker_state = {}
     
