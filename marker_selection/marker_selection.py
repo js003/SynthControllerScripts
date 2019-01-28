@@ -21,6 +21,10 @@ class MarkerSelection:
         world_capture.frame_mode = (width, height, 60)
         eye_capture.frame_mode = (640, 480, 60)
 
+        # Aruco
+        self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+        self.aruco_params = aruco.DetectorParameters_create()
+
         # Initialize variables
         last_pupil_count = 1
         eye_closed_start = None
@@ -96,20 +100,22 @@ class MarkerSelection:
         return pupil_count
 
     def process_world_frame(self, frame_bgr, frame_gray):
-        aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
-        parameters = aruco.DetectorParameters_create()
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(frame_gray, aruco_dict, parameters=parameters)
-        aruco.drawDetectedMarkers(frame_bgr, corners, ids)
+        corners, ids, rejected_img_points = aruco.detectMarkers(frame_gray, self.aruco_dict, parameters=self.aruco_params)
 
         selected_marker = None # tuple (id, points, center, distance)
         for i, c in enumerate(corners):
+            marker_id = ids[i][0]
             center = c[0].mean(0)
+            
+            cv2.polylines(frame_bgr, np.array(c, np.int32), True, (255, 0, 0), 2)
+            cv2.putText(frame_bgr, str(marker_id), (int(center[0] - len(str(marker_id)) * 10), int(center[1] + 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            
             distance = np.linalg.norm(self.cam_center - center)
             if selected_marker is None or selected_marker[3] > distance:
-                selected_marker = (ids[i][0], c, center, distance)
+                selected_marker = (marker_id, c, center, distance)
 
         if selected_marker is not None:
-            cv2.circle(frame_bgr, tuple(selected_marker[2]), 20, (0, 255, 0), 4)
+            cv2.circle(frame_bgr, tuple(selected_marker[2]), 30, (0, 255, 0), 4)
 
         cv2.circle(frame_bgr, self.cam_center, 5, (0, 0, 0), 2)
         cv2.circle(frame_bgr, self.cam_center, 8, (255, 255, 255), 2)
