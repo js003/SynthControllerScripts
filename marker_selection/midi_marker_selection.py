@@ -14,7 +14,10 @@ class MidiMarkerSelection(MarkerSelection):
         toggle = self.marker_state.get(marker_id, False)
         print("Blink: Marker " + str(marker_id) + " " + str(not toggle))
         self.marker_state[marker_id] = not toggle
-        self.midi_port.send(mido.Message('control_change', channel=0, control=marker_id, value=127 if toggle else 0))  
+        if marker_id == 0:
+            self.midi_port.send(mido.Message('control_change', channel=0 if toggle else 1, control=marker_id, value=127) 
+        else:
+            self.midi_port.send(mido.Message('control_change', channel=0, control=marker_id, value=127 if toggle else 0))  
 
     def overlay_marker(self, marker_id, marker_corners, frame):
         if self.marker_state.get(marker_id, False):
