@@ -3,6 +3,7 @@ import time
 import uvc
 import numpy as np
 import cv2
+import tkinter as tk
 from cv2 import aruco
 
 class MarkerSelection:
@@ -10,8 +11,8 @@ class MarkerSelection:
         pass
 
     def run(self):
-        running = True
-        while(running):
+        self.running = True
+        while(self.running):
             try:
                 # Setup camera captures
                 dev_list = uvc.device_list()
@@ -66,16 +67,12 @@ class MarkerSelection:
 
                     # Exit if the user presses 'q'
                     if cv2.waitKey(1) & 0xFF == ord('q'):
-                        running = False
+                        self.running = False
             except KeyboardInterrupt:
-                running = False
+                self.running = False
             except Exception:
-                traceback.print_exc()
                 cv2.destroyAllWindows()
-                try:
-                    input("Press Enter to restart...")
-                except KeyboardInterrupt:
-                    running = False
+                self.retry_dialog(traceback.format_exc())
             try:
                 world_capture.close()
                 eye_capture.close()
@@ -143,6 +140,19 @@ class MarkerSelection:
         cv2.circle(frame_bgr, self.cam_center, 8, (255, 255, 255), 2)
         cv2.circle(frame_bgr, self.cam_center, 10, (0, 0, 0), 2)
         return selected_marker
+
+    def retry_dialog(self, text):
+        self.running = False
+        root = tk.Tk()
+        root.title("Marker tracking crashed")
+        label = tk.Label(root, text=text)
+        label.pack(side="top", fill="both", expand=True, padx=20, pady=20)
+        def confirm_restart():
+            self.running = True
+            root.destroy()
+        button = tk.Button(root, text="Restart", command=confirm_restart)
+        button.pack(side="bottom", fill="none", expand=True, padx=20, pady=20)
+        root.mainloop()
 
     def overlay_marker(self, marker_id, marker_corners, frame):
         pass
