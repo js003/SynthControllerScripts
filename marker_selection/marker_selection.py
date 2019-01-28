@@ -35,7 +35,7 @@ class MarkerSelection:
                 eye_closed_start = None
                 selected_marker_id = -1
            
-                while(running):
+                while(self.running):
                     # Blink detection
                     eye_frame = eye_capture.get_frame(1)
                     eye_bgr = eye_frame.bgr
