@@ -31,7 +31,7 @@ class MarkerSelection:
             eye_frame = eye_capture.get_frame_robust()
             eye_bgr = eye_frame.bgr
             eye_gray = eye_frame.gray
-            pupil_count = process_eye_frame(eye_bgr, eye_gray)
+            pupil_count = self.process_eye_frame(eye_bgr, eye_gray)
             cv2.imshow('eye_frame', eye_bgr)
 
             if last_pupil_count == 1 and pupil_count == 0:
@@ -47,7 +47,7 @@ class MarkerSelection:
             world_frame = world_capture.get_frame_robust()
             world_bgr = world_frame.bgr
             world_gray = world_frame.gray
-            selected_marker = process_world_frame(world_bgr, world_gray, cam_center)
+            selected_marker = self.process_world_frame(world_bgr, world_gray)
             cv2.imshow('world_frame', world_bgr)
 
             if pupil_count == 1:
