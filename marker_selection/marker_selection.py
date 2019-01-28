@@ -24,7 +24,7 @@ class MarkerSelection:
         # Initialize variables
         last_pupil_count = 1
         eye_closed_start = None
-        last_selected_marker = None
+        selected_marker_id = -1
 
         while(True):
             # Blink detection
@@ -40,8 +40,8 @@ class MarkerSelection:
             elif last_pupil_count == 0 and pupil_count == 1:
                 last_pupil_count = 1
                 t = time.time() - eye_closed_start
-                if t > 0.3 and last_selected_marker is not None:
-                    self.blink_action(last_selected_marker[0])
+                if t > 0.3:
+                    self.blink_action(selected_marker_id)
 
             # Marker detection
             world_frame = world_capture.get_frame_robust()
@@ -51,16 +51,16 @@ class MarkerSelection:
             cv2.imshow('world_frame', world_bgr)
 
             if pupil_count == 1:
-                last_selected_marker = selected_marker
-                self.select_action(last_selected_marker[0])
+                curr_id = selected_marker[0] if selected_marker is not None else -1
+                if curr_id != selected_marker_id:
+                    selected_marker_id = curr_id
+                    self.select_action(selected_marker_id)
 
             # Exit if the user presses 'q'
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         # When everything done, release the capture
-        world_capture.release()
-        eye_capture.release()
         cv2.destroyWindow('eye_frame')
         cv2.destroyWindow('world_frame')
 

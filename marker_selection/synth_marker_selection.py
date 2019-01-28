@@ -10,11 +10,11 @@ class SynthMarkerSelection(MarkerSelection):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def select_action(self, marker_id)
-        self.socket.sendto(str(marker_id).encode(), ('127.0.0.1', 8898))
-        self.socket.sendto(COLORS[marker_id], ('127.0.0.1', 8899))
-    
+        color = COLORS[marker_id] if marker_id >= 0 else b'000000'
+        self.socket.sendto(color, ('127.0.0.1', 8899))
+
     def blink_action(self, marker_id):
-        self.socket.sendto('SELECT'.encode(), ('127.0.0.1', 8898))
+        self.socket.sendto(str(marker_id).encode(), ('127.0.0.1', 8898))
 
 if __name__ == '__main__':
     SynthMarkerSelection().run()
