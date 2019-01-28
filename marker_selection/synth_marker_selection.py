@@ -18,5 +18,6 @@ class SynthMarkerSelection(MarkerSelection):
         print('Blink at marker ' + str(marker_id))
         self.socket.sendto(str(marker_id).encode(), ('127.0.0.1', 8898))
 
+
 if __name__ == '__main__':
     SynthMarkerSelection().run()

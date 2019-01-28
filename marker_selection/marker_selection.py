@@ -109,8 +109,10 @@ class MarkerSelection:
         for i, c in enumerate(corners):
             marker_id = ids[i][0]
             center = c[0].mean(0)
+            marker_corners = np.array(c, np.int32)
             
-            cv2.polylines(frame_bgr, np.array(c, np.int32), True, (255, 0, 0), 2)
+            cv2.polylines(frame_bgr, marker_corners, True, (255, 0, 0), 2)
+            self.overlay_marker(marker_id, marker_corners, frame_bgr)
             text_pos = (int(center[0] - len(str(marker_id)) * 10), int(center[1] + 10))
             cv2.putText(frame_bgr, str(marker_id), text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 10, cv2.LINE_AA)
             cv2.putText(frame_bgr, str(marker_id), text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
@@ -126,6 +128,9 @@ class MarkerSelection:
         cv2.circle(frame_bgr, self.cam_center, 8, (255, 255, 255), 2)
         cv2.circle(frame_bgr, self.cam_center, 10, (0, 0, 0), 2)
         return selected_marker
+
+    def overlay_marker(self, marker_id, marker_corners, frame):
+        pass
 
     def select_action(self, marker_id):
         pass

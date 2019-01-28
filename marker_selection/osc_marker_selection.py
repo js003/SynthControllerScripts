@@ -1,4 +1,5 @@
 import sys
+import cv2
 from pythonosc import udp_client
 from marker_selection import MarkerSelection
 
@@ -15,6 +16,10 @@ class OscMarkerSelection(MarkerSelection):
         print("Blink: Marker " + str(marker_id) + " " + str(not toggle))
         self.marker_state[marker_id] = not toggle
         self.client.send_message("/marker" + str(marker_id), 127 if toggle else 0)
+
+    def overlay_marker(self, marker_id, marker_corners, frame):
+        if self.marker_state.get(marker_id, False):
+            cv2.polylines(frame, marker_corners, True, (0, 0, 255), 2)
 
 
 if __name__ == '__main__':
