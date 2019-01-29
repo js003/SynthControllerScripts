@@ -13,6 +13,8 @@ class MarkerSelection:
     def run(self):
         self.running = True
         while(self.running):
+            world_capture = None
+            eye_capture = None
             try:
                 # Setup camera captures
                 dev_list = uvc.device_list()
@@ -72,12 +74,10 @@ class MarkerSelection:
                 self.running = False
             except Exception:
                 cv2.destroyAllWindows()
+                if world_capture is not None: world_capture.close()
+                if eye_capture is not None: eye_capture.close()
                 self.retry_dialog(traceback.format_exc())
-            try:
-                world_capture.close()
-                eye_capture.close()
-            except:
-                pass
+
             cv2.destroyAllWindows()
 
     def process_eye_frame(self, frame_bgr, frame_gray):
