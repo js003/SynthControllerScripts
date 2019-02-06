@@ -33,6 +33,5 @@ while True:
         midi_port.send(mido.Message('control_change', channel=0, control=selected_knob, value=val))  
 
     print(data)
-    print("Looking at knob: " + str(knob))
     print("Selected knob: " + str(selected_knob))
 

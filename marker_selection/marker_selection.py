@@ -48,10 +48,10 @@ class MarkerSelection:
                     if last_pupil_count == 1 and pupil_count == 0:
                         last_pupil_count = 0
                         eye_closed_start = time.time()
-                    elif last_pupil_count == 0 and pupil_count == 1:
+                    elif last_pupil_count == 0 and pupil_count >= 1:
                         last_pupil_count = 1
                         t = time.time() - eye_closed_start
-                        if t > 0.3:
+                        if t > 0.42:
                             self.blink_action(selected_marker_id)
 
                     # Marker detection
@@ -76,7 +76,8 @@ class MarkerSelection:
                 cv2.destroyAllWindows()
                 if world_capture is not None: world_capture.close()
                 if eye_capture is not None: eye_capture.close()
-                self.retry_dialog(traceback.format_exc())
+                #self.retry_dialog(traceback.format_exc())
+                input('Press ENTER to restart...')
 
             cv2.destroyAllWindows()
 
@@ -131,7 +132,7 @@ class MarkerSelection:
                 selected_marker = (marker_id, c, center, distance)
 
         if selected_marker is not None:
-            if selected_marker[3] > 200:
+            if selected_marker[3] > 300:
                 selected_marker = None
             else:
                 cv2.circle(frame_bgr, tuple(selected_marker[2]), 30, (0, 255, 0), 4)
